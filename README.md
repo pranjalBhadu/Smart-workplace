@@ -1,1 +1,1 @@
-# smart-workplace-1
+# smart-workplace
