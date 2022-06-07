@@ -2,7 +2,7 @@ import keras
 import tensorflow
 # from imutils.video import VideoStream
 from tensorflow.keras.models import load_model
-model = load_model('/Users/pranjalbhadu/Documents/final_projects/smart_workplace/mask_detection/masknet.h5')
+model = load_model('/Users/pranjalbhadu/Documents/smart-workplace/mask_detection/mask_detector.model')
 
 
 import cv2
@@ -12,8 +12,8 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 import numpy as np
 
-faceCascade = cv2.CascadeClassifier('/Users/pranjalbhadu/Documents/final_projects/smart_workplace/mask_detection/haarcascade_frontalface_alt2.xml')
-nose_cascade = cv2.CascadeClassifier('/Users/pranjalbhadu/Documents/final_projects/smart_workplace/mask_detection/haarcascade_mcs_nose.xml')
+faceCascade = cv2.CascadeClassifier('/Users/pranjalbhadu/Documents/smart-workplace/mask_detection/haarcascade_frontalface_alt2.xml')
+nose_cascade = cv2.CascadeClassifier('/Users/pranjalbhadu/Documents/smart-workplace/mask_detection/haarcascade_mcs_nose.xml')
 
 if nose_cascade.empty():
   raise IOError('Unable to open nose cascade')
@@ -40,7 +40,7 @@ while True:
     for (x, y, w, h) in faces:
         face_frame = frame[y:y+h,x:x+w]
         face_frame = cv2.cvtColor(face_frame, cv2.COLOR_BGR2RGB)
-        face_frame = cv2.resize(face_frame, (128, 128))
+        face_frame = cv2.resize(face_frame, (224, 224))
         face_frame = img_to_array(face_frame)
         face_frame = np.expand_dims(face_frame, axis=0)
         face_frame =  preprocess_input(face_frame)
