@@ -107,90 +107,85 @@ def detect_people(frame, net, ln, personIdx=0):
 
 # load the COCO class labels out YOLO model was trained on
 
-labelsPath = os.path.sep.join(["/Users/pranjalbhadu/Documents/smart-workplace/social-distancing/yolo-coco/coco.names"])
-LABELS = open(labelsPath).read().strip().split("\n")
+def social_distancing_func():
 
-# derive the paths to the YOLO weights and model configuration
+    labelsPath = os.path.sep.join(["/Users/pranjalbhadu/Documents/smart-workplace/social_distancing_model/yolo-coco/coco.names"])
+    LABELS = open(labelsPath).read().strip().split("\n")
 
-weightsPath = os.path.sep.join(["/Users/pranjalbhadu/Documents/smart-workplace/social-distancing/yolo-coco/yolov3.weights"])
-configPath = os.path.sep.join(["/Users/pranjalbhadu/Documents/smart-workplace/social-distancing/yolo-coco/yolov3.cfg"])
+    # derive the paths to the YOLO weights and model configuration
 
-# load our YOLO object detector trained on COCO dataset (80 classes)
-print("[INFO] loading YOLO from disk...")
-net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
+    weightsPath = os.path.sep.join(["/Users/pranjalbhadu/Documents/smart-workplace/social_distancing_model/yolo-coco/yolov3.weights"])
+    configPath = os.path.sep.join(["/Users/pranjalbhadu/Documents/smart-workplace/social_distancing_model/yolo-coco/yolov3.cfg"])
 
-# determine only the *output* layer names that we need from YOLO
+    # load our YOLO object detector trained on COCO dataset (80 classes)
+    print("[INFO] loading YOLO from disk...")
+    net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
 
-ln = net.getLayerNames()
-ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
+    # determine only the *output* layer names that we need from YOLO
 
-# initialize the video stream and pointer to output video file
+    ln = net.getLayerNames()
+    ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
 
-vs = cv2.VideoCapture("/Users/pranjalbhadu/Documents/smart-workplace/social-distancing/vtest.mp4")
-writer = None
+    # initialize the video stream and pointer to output video file
 
-# loop over frame from video capture
+    # vs = cv2.VideoCapture("/Users/pranjalbhadu/Documents/smart-workplace/social_distancing_model/vtest.mp4")
+    vs = cv2.VideoCapture(0)
+    writer = None
 
-while True:
-    # read next frame from the file
+    # loop over frame from video capture
 
-    (grabbed, frame) = vs.read();
+    while True:
+        # read next frame from the file
 
-    if not grabbed:
-        break
+        (grabbed, frame) = vs.read();
 
-    frame = imutils.resize(frame, width=700)
-    results = detect_people(frame, net, ln, personIdx=LABELS.index("person"))
+        if not grabbed:
+            break
 
-    # initialize the set of indexes that violate the minimum social distance
+        frame = imutils.resize(frame, width=700)
+        results = detect_people(frame, net, ln, personIdx=LABELS.index("person"))
 
-    violate = set()
+        # initialize the set of indexes that violate the minimum social distance
 
-    # ensure that there are minimum two detections and
+        violate = set()
 
-    if len(results) >= 2:
-        # extract centroids and compute euclidean distance
-        centroids = np.array([r[2] for r in results])
-        d = dist.cdist(centroids, centroids, metric='euclidean')
+        # ensure that there are minimum two detections and
 
-        for i in range(0, d.shape[0]):
-            for j in range(i+1, d.shape[1]):
-                if d[i, j] < MIN_DISTANCE:
-                    violate.add(i)
-                    violate.add(j)
-    print(len(violate))
-    # loop over the results
-    for (i, (prob, bbox, centroid)) in enumerate(results):
-        (startx, starty, endx, endy) = bbox
-        (cx, cy) = centroid
-        color = (0, 255, 0)
+        if len(results) >= 2:
+            # extract centroids and compute euclidean distance
+            centroids = np.array([r[2] for r in results])
+            d = dist.cdist(centroids, centroids, metric='euclidean')
 
-        # if index pair exist in violation, update color
+            for i in range(0, d.shape[0]):
+                for j in range(i+1, d.shape[1]):
+                    if d[i, j] < MIN_DISTANCE:
+                        violate.add(i)
+                        violate.add(j)
+        print(len(violate))
+        # loop over the results
+        for (i, (prob, bbox, centroid)) in enumerate(results):
+            (startx, starty, endx, endy) = bbox
+            (cx, cy) = centroid
+            color = (0, 255, 0)
 
-        if i in violate: 
-            color = (0, 0, 255)
-        
-        # draw bounding box and centroid
+            # if index pair exist in violation, update color
 
-        cv2.rectangle(frame, (startx, starty), (endx, endy), color, 5, 1)
+            if i in violate: 
+                color = (0, 0, 255)
+            
+            # draw bounding box and centroid
 
-    # show total violations
+            cv2.rectangle(frame, (startx, starty), (endx, endy), color, 5, 1)
 
-    text = "Social Distancing Violations: {}".format(len(violate))
+        # show total violations
 
-    cv2.putText(frame, text, (10, frame.shape[0] - 25),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.85, (0, 0, 255), 3)
-    cv2.imshow('video',frame)
-    if writer is None:
-        fourcc = cv2.VideoWriter_fourcc(*"MPEG")
-        writer = cv2.VideoWriter("output.avi", fourcc, 30, (frame.shape[1], frame.shape[0]), True)
+        text = "Social Distancing Violations: {}".format(len(violate))
+
+        cv2.putText(frame, text, (10, frame.shape[0] - 25),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.85, (0, 0, 255), 3)
+        # cv2.imshow('video',frame)
+        ret, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+        yield(b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
     
-    writer.write(frame)
-    if cv2.waitKey(1) & 0xFF == ord('s'):
-        break
-    # out.write(frame)
-
-# out.release()
-
-vs.release()
-cv2.destroyAllWindows()

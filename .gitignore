@@ -2,3 +2,5 @@
 Face_Mask_Dataset
 yolo-coco
 myenv 
+__pycache__
+.DS_Store
