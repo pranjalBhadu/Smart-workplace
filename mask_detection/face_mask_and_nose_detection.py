@@ -2,7 +2,9 @@ import keras
 import tensorflow
 # from imutils.video import VideoStream
 from tensorflow.keras.models import load_model
-model = load_model('/Users/pranjalbhadu/Documents/smart-workplace/mask_detection/mask_detector.model')
+import os
+dirname = os.path.dirname(__file__)
+model = load_model(os.path.join(dirname, 'mask_detector.model'))
 
 
 import cv2

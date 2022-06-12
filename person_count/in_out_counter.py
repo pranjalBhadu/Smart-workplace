@@ -2,7 +2,8 @@ import numpy as numpy
 import time
 import imutils
 import cv2 
-
+import os
+dirname = os.path.dirname(__file__)
 
 def in_out_func():
     # video = cv2.VideoCapture('/Users/pranjalbhadu/Documents/smart-workplace/person-count/people-capture.mp4')

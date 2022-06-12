@@ -12,7 +12,7 @@ from scipy.spatial import distance as dist
 import argparse
 import imutils
 import os
-
+dirname = os.path.dirname(__file__)
 # initialize minimum probability to filter weak detections along with the threshold when applying non-maxima suppression
 
 MIN_CONF = 0.3 
@@ -108,14 +108,14 @@ def detect_people(frame, net, ln, personIdx=0):
 # load the COCO class labels out YOLO model was trained on
 
 def social_distancing_func():
-
-    labelsPath = os.path.sep.join(["/Users/pranjalbhadu/Documents/smart-workplace/social_distancing_model/yolo-coco/coco.names"])
+    # model = load_model(os.path.join(dirname, 'mask_detector.model'))
+    labelsPath = os.path.join(dirname, "yolo-coco/coco.names")
     LABELS = open(labelsPath).read().strip().split("\n")
 
     # derive the paths to the YOLO weights and model configuration
 
-    weightsPath = os.path.sep.join(["/Users/pranjalbhadu/Documents/smart-workplace/social_distancing_model/yolo-coco/yolov3.weights"])
-    configPath = os.path.sep.join(["/Users/pranjalbhadu/Documents/smart-workplace/social_distancing_model/yolo-coco/yolov3.cfg"])
+    weightsPath = os.path.join(dirname, "yolo-coco/yolov3.weights")
+    configPath = os.path.join(dirname, "yolo-coco/yolov3.cfg")
 
     # load our YOLO object detector trained on COCO dataset (80 classes)
     print("[INFO] loading YOLO from disk...")
